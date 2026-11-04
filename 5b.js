@@ -27,6 +27,8 @@ const browserCopySolution = typeof navigator.clipboard.write === "function";
 let copyButton = 0; // Hack to make copying work on Safari.
 const isMobile = isTouchDevice();
 let mobileControls = null;
+let fullscreenButton = null;
+let fullscreenSupported = false;
 const mobileHeldKeys = new Set();
 let randomMode = false;
 
@@ -7318,6 +7320,37 @@ function releaseMobileKeys() {
 	}
 }
 
+function isFullscreen() {
+	return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+
+function updateFullscreenButton() {
+	if (!fullscreenButton) return;
+	fullscreenButton.textContent = isFullscreen() ? 'EXIT' : 'FULL';
+}
+
+function toggleFullscreen() {
+	if (isFullscreen()) {
+		const exit = document.exitFullscreen || document.webkitExitFullscreen;
+		if (exit) exit.call(document);
+		return;
+	}
+	const root = document.documentElement;
+	const request = root.requestFullscreen || root.webkitRequestFullscreen;
+	if (!request) return;
+	const result = request.call(root);
+	if (result && result.then) {
+		result.then(() => {
+			try {
+				if (screen.orientation && screen.orientation.lock) {
+					const lock = screen.orientation.lock('landscape');
+					if (lock && lock.catch) lock.catch(() => {});
+				}
+			} catch (error) {}
+		}).catch(() => {});
+	}
+}
+
 function updateMobileControls() {
 	if (!mobileControls) return;
 	const visible = menuScreen == 3;
@@ -7325,6 +7358,17 @@ function updateMobileControls() {
 	if (mobileControls.style.display != display) {
 		mobileControls.style.display = display;
 		if (!visible) releaseMobileKeys();
+	}
+	if (visible) {
+		const width = mobileControls.clientWidth;
+		const cell = Math.max(32, Math.min(52, width * 0.055));
+		if (mobileControls.dataset.cell != cell) {
+			mobileControls.style.setProperty('--cell', cell + 'px');
+			mobileControls.dataset.cell = cell;
+		}
+	}
+	if (fullscreenButton && fullscreenSupported) {
+		fullscreenButton.style.display = visible || isFullscreen() ? 'block' : 'none';
 	}
 }
 
@@ -7368,6 +7412,40 @@ function setupMobileControls() {
 	mobileControls.addEventListener('touchend', blockTouch, {passive: false});
 	mobileControls.addEventListener('touchmove', blockTouch, {passive: false});
 	window.addEventListener('blur', releaseMobileKeys);
+
+	fullscreenButton = document.getElementById('fullscreenBtn');
+	fullscreenSupported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+	if (!fullscreenButton) return;
+	if (!fullscreenSupported) {
+		fullscreenButton.style.display = 'none';
+		return;
+	}
+	const fsPress = event => {
+		event.stopPropagation();
+		fullscreenButton.classList.add('active');
+	};
+	const fsRelease = event => {
+		event.stopPropagation();
+		fullscreenButton.classList.remove('active');
+	};
+	if (window.PointerEvent) {
+		fullscreenButton.addEventListener('pointerdown', fsPress);
+		fullscreenButton.addEventListener('pointerup', fsRelease);
+		fullscreenButton.addEventListener('pointercancel', fsRelease);
+		fullscreenButton.addEventListener('pointerleave', fsRelease);
+	} else {
+		fullscreenButton.addEventListener('touchstart', fsPress, {passive: false});
+		fullscreenButton.addEventListener('touchend', fsRelease, {passive: false});
+	}
+	fullscreenButton.addEventListener('click', event => {
+		event.preventDefault();
+		event.stopPropagation();
+		toggleFullscreen();
+	});
+	fullscreenButton.addEventListener('contextmenu', event => event.preventDefault());
+	document.addEventListener('fullscreenchange', updateFullscreenButton);
+	document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+	updateFullscreenButton();
 }
 
 function mousemove(event) {

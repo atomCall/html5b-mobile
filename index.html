@@ -13,24 +13,27 @@
 </head>
 <body>
 <div id="center">
-	<div id="hide-contenteditable"><canvas width="960" height="540" id="cnv" contenteditable="false"></canvas></div>
-	<p class="bottomtext">An HTML5 port of Cary Huang's <a href="https://bfdi.tv/5b/">BFDIA 5b</a>. Explore is powered by <a href="https://5beam.zelo.dev/">Zelo101's 5beam</a>.</p>
-</div>
-<div id="mobileControls">
-	<div class="dpad">
-		<button class="btn up" data-key="38" aria-label="Up">UP</button>
-		<button class="btn left" data-key="37" aria-label="Left">LEFT</button>
-		<button class="btn right" data-key="39" aria-label="Right">RIGHT</button>
-		<button class="btn down" data-key="40" aria-label="Down">DOWN</button>
-	</div>
-	<div class="actions">
-		<button class="btn jump" data-key="32" aria-label="Jump">JUMP</button>
-		<div class="actionRow">
-			<button class="btn small" data-key="90" aria-label="Swap character">SWAP</button>
-			<button class="btn small" data-key="82" aria-label="Reset level">RESET</button>
-			<button class="btn small" data-key="13" aria-label="Continue">OK</button>
+	<div id="hide-contenteditable">
+		<canvas width="960" height="540" id="cnv" contenteditable="false"></canvas>
+		<button id="fullscreenBtn" aria-label="Toggle fullscreen">FULL</button>
+		<div id="mobileControls">
+			<div class="dpad">
+				<button class="btn up" data-key="38" aria-label="Up">UP</button>
+				<button class="btn left" data-key="37" aria-label="Left">LEFT</button>
+				<button class="btn right" data-key="39" aria-label="Right">RIGHT</button>
+				<button class="btn down" data-key="40" aria-label="Down">DOWN</button>
+			</div>
+			<div class="actions">
+				<button class="btn jump" data-key="32" aria-label="Jump">JUMP</button>
+				<div class="actionRow">
+					<button class="btn small" data-key="90" aria-label="Swap character">SWAP</button>
+					<button class="btn small" data-key="82" aria-label="Reset level">RESET</button>
+					<button class="btn small" data-key="13" aria-label="Continue">OK</button>
+				</div>
+			</div>
 		</div>
 	</div>
+	<p class="bottomtext">An HTML5 port of Cary Huang's <a href="https://bfdi.tv/5b/">BFDIA 5b</a>. Explore is powered by <a href="https://5beam.zelo.dev/">Zelo101's 5beam</a>.</p>
 </div>
 </body>
 </html>
