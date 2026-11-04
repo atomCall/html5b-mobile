@@ -7320,7 +7320,7 @@ function releaseMobileKeys() {
 
 function updateMobileControls() {
 	if (!mobileControls) return;
-	const visible = isMobile && menuScreen == 3;
+	const visible = menuScreen == 3;
 	const display = visible ? 'block' : 'none';
 	if (mobileControls.style.display != display) {
 		mobileControls.style.display = display;
@@ -7330,8 +7330,8 @@ function updateMobileControls() {
 
 function setupMobileControls() {
 	mobileControls = document.getElementById('mobileControls');
-	if (!mobileControls || !isMobile) return;
-	document.body.classList.add('touch');
+	if (!mobileControls) return;
+	if (isMobile) document.body.classList.add('touch');
 	mobileControls.querySelectorAll('.btn').forEach(button => {
 		const key = Number(button.dataset.key);
 		const press = event => {
