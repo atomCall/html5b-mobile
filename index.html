@@ -1,25 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>HTML5b - Battle for Dream Island</title>
-	<meta name="description" content="An HTML5 port of the puzzle platformer in the world of Battle for Dream Island."/>
+	<title>HTML5b Mobile - Battle for Dream Island</title>
+	<meta name="description" content="A mobile friendly HTML5 port of the puzzle platformer in the world of Battle for Dream Island."/>
 	<meta charset="utf-8"/>
 	<meta name="author" content="coppersalts">
-	<meta property="og:title" content="HTML5b">
-	<meta property="og:type" content="website">
-	<meta property="og:url" content="https://coppersalts.github.io/HTML5b/">
-	<meta property="og:image" content="https://coppersalts.github.io/HTML5b/visuals/bg/bg0002.png">
-	<meta property="og:description" content="An HTML5 port of Cary Huang's BFDIA 5b.">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
 	<meta name="theme-color" content="#c92b20">
-	<meta name="twitter:card" content="summary_large_image">
 	<link rel="shortcut icon" type="image/x-icon" href="./visuals/blocks/b0001.svg" />
 	<link rel="stylesheet" href="style.css" type="text/css"/>
 	<script type="text/javascript" src="5b.js"></script>
 </head>
-<body style="overflow:hidden;">
+<body>
 <div id="center">
 	<div id="hide-contenteditable"><canvas width="960" height="540" id="cnv" contenteditable="false"></canvas></div>
 	<p class="bottomtext">An HTML5 port of Cary Huang's <a href="https://bfdi.tv/5b/">BFDIA 5b</a>. Explore is powered by <a href="https://5beam.zelo.dev/">Zelo101's 5beam</a>.</p>
+</div>
+<div id="mobileControls">
+	<div class="dpad">
+		<button class="btn up" data-key="38" aria-label="Up">UP</button>
+		<button class="btn left" data-key="37" aria-label="Left">LEFT</button>
+		<button class="btn right" data-key="39" aria-label="Right">RIGHT</button>
+		<button class="btn down" data-key="40" aria-label="Down">DOWN</button>
+	</div>
+	<div class="actions">
+		<button class="btn jump" data-key="32" aria-label="Jump">JUMP</button>
+		<div class="actionRow">
+			<button class="btn small" data-key="90" aria-label="Swap character">SWAP</button>
+			<button class="btn small" data-key="82" aria-label="Reset level">RESET</button>
+			<button class="btn small" data-key="13" aria-label="Continue">OK</button>
+		</div>
+	</div>
 </div>
 </body>
 </html>

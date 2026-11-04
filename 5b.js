@@ -26,6 +26,8 @@ const browserPasteSolution = typeof navigator.clipboard.readText === "function";
 const browserCopySolution = typeof navigator.clipboard.write === "function";
 let copyButton = 0; // Hack to make copying work on Safari.
 const isMobile = isTouchDevice();
+let mobileControls = null;
+const mobileHeldKeys = new Set();
 let randomMode = false;
 
 // offscreen canvases
@@ -2215,7 +2217,9 @@ function getPixelRatio(quality) {
 	// Round the device pixel ratio to the nearest integer in log base 2
 	// This is so that if you have the page zoomed or have some scale factor on Windows
 	// there aren't lines between blocks.
-	return 2**(Math.round(Math.log2(window.devicePixelRatio))+quality)
+	let ratio = 2**(Math.round(Math.log2(window.devicePixelRatio))+quality);
+	if (isMobile) ratio = Math.min(ratio, 2);
+	return ratio;
 }
 
 async function loadingScreen() {
@@ -7304,12 +7308,82 @@ function touchmove(event) {
 	mousemove(event.changedTouches[0]);
 }
 
+function releaseMobileKeys() {
+	mobileHeldKeys.forEach(key => {
+		_keysDown[key] = false;
+	});
+	mobileHeldKeys.clear();
+	if (mobileControls) {
+		mobileControls.querySelectorAll('.btn.active').forEach(button => button.classList.remove('active'));
+	}
+}
+
+function updateMobileControls() {
+	if (!mobileControls) return;
+	const visible = isMobile && menuScreen == 3;
+	const display = visible ? 'block' : 'none';
+	if (mobileControls.style.display != display) {
+		mobileControls.style.display = display;
+		if (!visible) releaseMobileKeys();
+	}
+}
+
+function setupMobileControls() {
+	mobileControls = document.getElementById('mobileControls');
+	if (!mobileControls || !isMobile) return;
+	document.body.classList.add('touch');
+	mobileControls.querySelectorAll('.btn').forEach(button => {
+		const key = Number(button.dataset.key);
+		const press = event => {
+			event.preventDefault();
+			event.stopPropagation();
+			_keysDown[key] = true;
+			mobileHeldKeys.add(key);
+			button.classList.add('active');
+		};
+		const release = event => {
+			event.preventDefault();
+			event.stopPropagation();
+			_keysDown[key] = false;
+			mobileHeldKeys.delete(key);
+			button.classList.remove('active');
+		};
+		if (window.PointerEvent) {
+			button.addEventListener('pointerdown', press);
+			button.addEventListener('pointerup', release);
+			button.addEventListener('pointercancel', release);
+			button.addEventListener('pointerleave', release);
+		} else {
+			button.addEventListener('touchstart', press, {passive: false});
+			button.addEventListener('touchend', release, {passive: false});
+			button.addEventListener('touchcancel', release, {passive: false});
+		}
+		button.addEventListener('contextmenu', event => event.preventDefault());
+	});
+	const blockTouch = event => {
+		event.preventDefault();
+		event.stopPropagation();
+	};
+	mobileControls.addEventListener('touchstart', blockTouch, {passive: false});
+	mobileControls.addEventListener('touchend', blockTouch, {passive: false});
+	mobileControls.addEventListener('touchmove', blockTouch, {passive: false});
+	window.addEventListener('blur', releaseMobileKeys);
+}
+
 function mousemove(event) {
-	_xmouse = event.pageX*addedZoom - canvasReal.getBoundingClientRect().left;
-	_ymouse = event.pageY*addedZoom - canvasReal.getBoundingClientRect().top;
+	const rect = canvasReal.getBoundingClientRect();
+	const pointX = event.clientX !== undefined ? event.clientX : event.pageX;
+	const pointY = event.clientY !== undefined ? event.clientY : event.pageY;
+	_xmouse = (pointX - rect.left) * (cwidth / rect.width);
+	_ymouse = (pointY - rect.top) * (cheight / rect.height);
 }
 
 function mousedown(event) {
+	if (event && event.changedTouches && event.changedTouches[0]) {
+		mousemove(event.changedTouches[0]);
+	} else if (event && event.clientX !== undefined) {
+		mousemove(event);
+	}
 	mouseIsDown = true;
 	lastClickX = _xmouse;
 	lastClickY = _ymouse;
@@ -7648,13 +7722,14 @@ function setup() {
 	window.addEventListener('pointerup', mouseup);
 	window.addEventListener('keydown', keydown);
 	window.addEventListener('keyup', keyup);
-	if (isMobile) {
+	if (isMobile && !window.PointerEvent) {
 		window.addEventListener('touchstart', touchstart);
 		window.addEventListener('touchend', touchend);
 		window.addEventListener('touchcancel', touchcancel);
 		window.addEventListener('touchmove', touchmove);
 	}
 	canvas.addEventListener('paste', handlePaste);
+	setupMobileControls();
 
 	if (localStorage.getItem("5beam_id")) loggedInExploreUser5beamID = localStorage.getItem("5beam_id");
 	if (localStorage.getItem("5beam_auth")) getCurrentExploreUserID();
@@ -7703,6 +7778,7 @@ function draw() {
 	onTextBox = false;
 	onScrollbar = false;
 	mousePressedLastFrame = pmouseIsDown && !mouseIsDown;
+	updateMobileControls();
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	if (menuScreen == 2 || menuScreen == 3) ctx.translate(Math.floor(-cameraX + shakeX), Math.floor(-cameraY + shakeY));
 	switch (menuScreen) {
